@@ -1,0 +1,50 @@
+#%RAML 1.0
+title: Warehouse API
+
+/warehouse:
+
+    /{id}:
+      get:
+        description: retrive warehouse detatils
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include examples/warehouseGETexample.raml
+                  
+
+      post:
+        description: add new warehouse details
+        queryParameters:
+          secretCode:            
+            required: true
+            type: string
+            minLength: 3
+            maxLength: 8
+        body:
+          application/json:
+            example: !include examples/warehousePOSTexample.raml
+        responses:
+          200:
+            body:
+              application/json:
+                example: {"message":"warehouse added "}               
+            
+        
+
+/users:
+  uriParameters:
+    /{id}:
+      type: integer
+      required: true
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/userGETexample.raml
+              
+
+
+            
+                  

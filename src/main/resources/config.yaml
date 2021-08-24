@@ -1,0 +1,8 @@
+http:
+  port: "8081"
+  
+sprintdb:
+  host: "mu.learn.mulesoft.com"
+  port: "80"
+  basepath: "/"
+  protocol: "HTTP"

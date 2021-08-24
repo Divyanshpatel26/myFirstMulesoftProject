@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="7b0b6f5b-2d9d-43bf-9055-e1b1fdfd987c" >
+		<db:generic-connection url="jdbc:postgresql://localhost:5432/sprintdb" driverClassName="org.postgresql.Driver" user="postgres" password="0581@Sql" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="fed639cd-7aee-424a-8c15-28396bb068fd" >
+		<http:listener-connection host="0.0.0.0" port="8088" />
+	</http:listener-config>
+	<flow name="getWarehouse" doc:id="40da8705-4a45-4c13-b4a6-b97f1e7f8617" >
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Variable" doc:id="1c43d761-4904-4bff-8a24-5c91c7cb4ad5" variableName="id"/>
+		<db:select doc:name="Select" doc:id="785d9ab9-98e8-4beb-b5cb-99c22a9bdefa" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from warehouses where wh_id=:id;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{ id: vars.id}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="2d35a28a-c5af-40ee-9f0b-d3577f276da7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0fe2738d-9b06-4400-8c7b-185935fa52f8" message="#[payload]"/>
+	</flow>
+	<flow name="getUser" doc:id="a51bcbbc-ddb0-483a-9f9d-6b4e928699b5" >
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Variable" doc:id="1b7f1707-7cb7-46f1-a24e-4d3c3ca178e0" variableName="id"/>
+		<db:select doc:name="Copy_of_Select" doc:id="ce8088d5-ae8e-4ca7-87e8-ab1082b144b3" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from users where user_id=:id ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{ id: vars.id}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9995785f-3ba1-4d1c-bd97-0829c062baac" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3262c500-ccac-4f98-909d-1af2903d1456" />
+	</flow>
+	<flow name="postWarehouse" doc:id="94486529-ed82-46b5-93c5-a3dc23ebef58" >
+		<db:insert doc:name="Insert" doc:id="a3db8dc8-a70c-4615-b7fb-0e1d447798b7" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into warehouses(country,location,state,sub_location,mgr_id) values (:country,:location,:state,:sub_location,:mgr_id)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	country: payload.country,
+	location: payload.location,
+	state: payload.state,
+	sub_location: payload.sub_location,
+	mgr_id: payload.mgr_id
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="20fe5e47-8f77-44e1-a005-206e4b42a3a7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"added successfully"		
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="540d7795-e009-420b-8941-0efeb11270d3" />
+	</flow>
+</mule>
